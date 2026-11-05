@@ -46,6 +46,9 @@ h4{margin:16px 20px 4px;color:var(--mu);font-size:13px}
 .fl{display:flex;gap:8px;padding:12px 16px;overflow-x:auto}.fl button{background:var(--card);padding:8px 14px;border-radius:99px;white-space:nowrap}.fl .on{background:#243053}
 #toast{position:fixed;left:16px;right:16px;bottom:90px;background:#243053;padding:14px;border-radius:14px;display:none;z-index:20}
 #toast.show{display:block}#toast button{color:var(--mint);float:right;font-weight:700}
+.tr{display:grid;grid-template-columns:44px 1fr 1fr 1fr;gap:4px;padding:7px 0;border-bottom:1px solid #1d2640;font-size:14px;text-align:right}
+.tr span:first-child{text-align:left;color:var(--mu)}.tr.h{color:var(--mu);font-size:12px}
+.tr.tot{font-weight:700;border-bottom:0}.tr.tot span:first-child{color:var(--tx)}
 </style>
 </head>
 <body>
@@ -53,6 +56,7 @@ h4{margin:16px 20px 4px;color:var(--mu);font-size:13px}
 <button id="fab" onclick="openReg()" aria-label="Nuevo registro">+</button>
 <nav>
  <button data-t="home" onclick="go('home')">Inicio</button>
+ <button data-t="summ" onclick="go('summ')">Resumen</button>
  <button data-t="hist" onclick="go('hist')">Historial</button>
  <button data-t="goals" onclick="go('goals')">Metas</button>
  <button data-t="more" onclick="go('more')">Más</button>
@@ -111,7 +115,7 @@ function calc(p){
 }
 
 /* ---------- Estado de pantalla ---------- */
-let V={tab:'home',ref:today(),flt:'all'};
+let V={tab:'home',ref:today(),flt:'all',yr:new Date().getFullYear()};
 const go=t=>{V.tab=t;render()};
 function nav(d){const p=period(V.ref);
   V.ref=d<0?new Date(p.s.getFullYear(),p.s.getMonth(),p.s.getDate()-1):new Date(p.e.getFullYear(),p.e.getMonth(),p.e.getDate()+1);render()}
@@ -141,6 +145,28 @@ function vHome(){
   ${cur?`<div class="card"><small>HOY PUEDES GASTAR</small><div class="mid ${hoy<0?'neg':''}">${cop(Math.max(hoy,0))}</div><small>${cop(Math.max(daily,0))} por día · ${days} día${days>1?'s':''} para cerrar</small></div>`:''}
   <div class="card stats"><div><small>Ingresos</small><b class="ki">${cop(c.incR)}</b></div><div><small>Gastos</small><b class="kg">${cop(c.exp)}</b></div><div><small>Ahorro</small><b class="ka">${cop(c.sav)}</b><small>${c.inc?Math.round(c.sav/c.inc*100):0}%</small></div></div>
   <div class="card"><small>POR CATEGORÍA</small>${rows}</div>`;
+}
+
+/* ---------- Resumen anual: mes a mes + barras (como tu Excel) ---------- */
+function vSumm(){
+  const y=V.yr,M=Array.from({length:12},()=>({i:0,g:0,a:0})),by={};
+  live().filter(t=>t.f.slice(0,4)==y).forEach(t=>{M[+t.f.slice(5,7)-1][t.k]+=t.m;if(t.k==='g')by[t.c]=(by[t.c]||0)+t.m});
+  const T=M.reduce((s,m)=>({i:s.i+m.i,g:s.g+m.g,a:s.a+m.a}),{i:0,g:0,a:0});
+  const mx=Math.max(1,...M.map(m=>Math.max(m.i,m.g)));
+  const sh=n=>n>=1e6?(n/1e6).toFixed(1).replace('.',',')+'M':Math.round(n/1000)+'k';
+  const f=v=>v?(v<0?'-':'')+String(Math.abs(Math.round(v))).replace(/\B(?=(\d{3})+(?!\d))/g,'.'):'—';
+  const row=(l,i,g,b,c)=>`<div class="tr ${c||''}"><span>${l}</span><span class="ki">${f(i)}</span><span class="kg">${f(g)}</span><span class="${b<0?'kg':'ki'}">${f(b)}</span></div>`;
+  const rows=M.map((m,k)=>row(MES[k][0].toUpperCase()+MES[k].slice(1),m.i,m.g,m.i-m.g)).join('');
+  const grid=[0,.5,1].map(q=>`<line x1="30" x2="336" y1="${110-q*100}" y2="${110-q*100}" stroke="#222B45"/><text x="26" y="${113-q*100}" text-anchor="end" fill="#8A93A8" font-size="8">${sh(mx*q)}</text>`).join('');
+  const bars=M.map((m,k)=>{const x=34+k*25;return `<rect x="${x}" y="${110-m.i/mx*100}" width="9" height="${m.i/mx*100}" fill="#3DDC97" rx="2"/><rect x="${x+10}" y="${110-m.g/mx*100}" width="9" height="${m.g/mx*100}" fill="#FF6B6B" rx="2"/><text x="${x+10}" y="124" text-anchor="middle" fill="#8A93A8" font-size="8">${MES[k]}</text>`}).join('');
+  const cr=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([id,m])=>{const k=cat(id)||{e:'❔',n:'?'};
+    return `<div class="row"><span>${k.e} ${k.n}</span><div class="bar"><i style="width:${m/Math.max(T.g,1)*100}%"></i></div><b>${Math.round(m/Math.max(T.g,1)*100)}%</b></div>`}).join('')||'<p class="mu">Sin gastos este año.</p>';
+  return `<h2 class="t">Resumen</h2>
+  <div class="card"><div class="hd"><button onclick="V.yr--;render()">‹</button><b>${y}</b><button onclick="V.yr++;render()" ${y>=today().getFullYear()?'disabled':''}>›</button></div>
+   <div class="tr h"><span>Mes</span><span>Ingresos</span><span>Egresos</span><span>Balance</span></div>${rows}${row('Total',T.i,T.g,T.i-T.g,'tot')}
+   <small>Balance = ingresos − egresos. Ahorro del año: ${cop(T.a)} (${T.i?Math.round(T.a/T.i*100):0}% de tus ingresos)</small></div>
+  <div class="card"><small>INGRESOS vs EGRESOS</small><svg viewBox="0 0 340 130" style="width:100%;margin-top:8px">${grid}${bars}</svg><small><span class="ki">●</span> Ingresos &nbsp; <span class="kg">●</span> Egresos</small></div>
+  <div class="card"><small>GASTOS POR CATEGORÍA · ${y}</small>${cr}</div>`;
 }
 
 function vHist(){
@@ -232,7 +258,7 @@ function toast(m,u){const e=$('#toast');e.innerHTML=esc(m)+(u?' <button id="un">
 let ip;addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e;if($('#inst'))$('#inst').hidden=false});
 function instalar(){if(ip)ip.prompt()}
 function render(){
-  $('#app').innerHTML=({home:vHome,hist:vHist,goals:vGoals,more:vMore})[V.tab]();
+  $('#app').innerHTML=({home:vHome,summ:vSumm,hist:vHist,goals:vGoals,more:vMore})[V.tab]();
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===V.tab));
   $('#fab').style.display=V.tab==='more'?'none':'block';
   if(ip&&$('#inst'))$('#inst').hidden=false;
