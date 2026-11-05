@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B1020">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<title>Quincena</title>
+<style>
+:root{--bg:#0B1020;--card:#141B2F;--tx:#F2F5FA;--mu:#8A93A8;--mint:#3DDC97;--red:#FF6B6B;--ind:#7C8CFF;--amb:#FFC857}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font:16px system-ui,-apple-system,Roboto,sans-serif;font-variant-numeric:tabular-nums;padding:env(safe-area-inset-top) 0 120px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.card{background:var(--card);border-radius:20px;padding:16px;margin:12px 16px}
+.mu,small{color:var(--mu);font-size:13px}
+.t{margin:18px 20px 0;font-size:22px}
+.big{font-size:42px;font-weight:700;margin:4px 0}.mid{font-size:30px;font-weight:700;margin:4px 0}
+.neg{color:var(--red)}.kg{color:var(--red)}.ki{color:var(--mint)}.ka{color:var(--ind)}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.hd button{font-size:26px;padding:0 12px}.hd button:disabled{opacity:.25}
+.bar{height:8px;background:#222B45;border-radius:9px;overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;background:var(--mint)}.bar i.ind{background:var(--ind)}
+.ecg{width:100%;height:60px}
+.ecg polyline{fill:none;stroke:var(--mint);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 0 4px var(--mint))}
+.stats{display:flex;justify-content:space-between;text-align:center}.stats div{display:flex;flex-direction:column;gap:2px}
+.row{display:grid;grid-template-columns:1fr 60px auto;gap:10px;align-items:center;margin-top:10px}.row .bar{margin:0}
+.warn{margin:12px 16px;padding:12px;border-radius:14px;background:#3a2f12;color:var(--amb);font-size:14px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0e1427;border-top:1px solid #1d2640;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;padding:14px 0;color:var(--mu);font-size:13px}nav button.on{color:var(--mint)}
+#fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;background:var(--mint);color:#06281a;font-size:34px;box-shadow:0 6px 20px #3ddc9755}
+#sheet{display:none;position:fixed;inset:0;background:var(--bg);z-index:9;overflow:auto;padding:env(safe-area-inset-top) 16px 16px}#sheet.open{display:block}
+.top{display:flex;align-items:center;gap:8px;margin:8px 0}.top>button{font-size:22px;padding:8px 12px}
+.tabs{flex:1;display:flex;background:var(--card);border-radius:14px;padding:4px}.tabs button{flex:1;padding:10px;border-radius:10px}.tabs .on{background:#243053}
+.amt{font-size:46px;font-weight:700;text-align:center;margin:14px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chips button{background:var(--card);padding:11px 14px;border-radius:14px;min-height:48px}.chips .on{outline:2px solid var(--mint)}
+input{width:100%;font:inherit;color:var(--tx);background:var(--card);border:1px solid #243053;border-radius:12px;padding:12px}
+.two{display:flex;gap:8px;margin-bottom:10px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}.pad button{background:var(--card);border-radius:14px;padding:16px;font-size:22px}
+.btn{display:block;width:100%;text-align:center;background:#243053;color:var(--tx);font-size:16px;border-radius:14px;padding:14px;margin-top:10px}
+.go{background:var(--mint);color:#06281a;font-weight:700}.btn:disabled{opacity:.35}
+label{display:block;margin-top:10px;font-size:13px;color:var(--mu)}label input{margin-top:4px}
+h4{margin:16px 20px 4px;color:var(--mu);font-size:13px}
+.tx{display:flex;justify-content:space-between;gap:8px;margin:0 16px 6px;padding:12px;background:var(--card);border-radius:14px}
+.fl{display:flex;gap:8px;padding:12px 16px;overflow-x:auto}.fl button{background:var(--card);padding:8px 14px;border-radius:99px;white-space:nowrap}.fl .on{background:#243053}
+#toast{position:fixed;left:16px;right:16px;bottom:90px;background:#243053;padding:14px;border-radius:14px;display:none;z-index:20}
+#toast.show{display:block}#toast button{color:var(--mint);float:right;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<button id="fab" onclick="openReg()" aria-label="Nuevo registro">+</button>
+<nav>
+ <button data-t="home" onclick="go('home')">Inicio</button>
+ <button data-t="hist" onclick="go('hist')">Historial</button>
+ <button data-t="goals" onclick="go('goals')">Metas</button>
+ <button data-t="more" onclick="go('more')">Más</button>
+</nav>
+<div id="sheet"></div>
+<div id="toast"></div>
+
+<script>
+/* ===== QUINCENA v1 · todo en un archivo, sin dependencias ===== */
+const KEY='quincena.v1', $=s=>document.querySelector(s);
+
+/* ---------- Datos (localStorage) ---------- */
+// Dinero en pesos enteros. Fechas 'aaaa-mm-dd'. Cada registro lleva id, u (última edición) y del (borrado) para poder fusionar respaldos.
+const defaults=()=>({
+  set:{dias:[15,30],mesada:50000,pct:10,bk:null},
+  cats:[['g','🍔','Comida'],['g','🚌','Transporte'],['g','📚','Universidad'],['g','🎉','Salidas'],['g','🎮','Ocio'],['g','📱','Suscripciones'],['g','💊','Salud'],['g','✨','Otros'],
+        ['i','💵','Mesada'],['i','💰','Extra'],['i','📈','Rendimientos']].map(([t,e,n],i)=>({id:t+i,t,e,n})),
+  goals:[['Fondo de emergencia',150000],['Meta 2 años',0],['Meta 5 años',0]].map(([n,o],i)=>({id:'m'+i,n,o,u:0})),
+  tx:[]
+});
+let S; try{S=JSON.parse(localStorage.getItem(KEY))||defaults()}catch(e){S=defaults()}
+const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist(); // pide que el navegador no borre los datos
+
+/* ---------- Utilidades ---------- */
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const dm=s=>s.split('-').reverse().join('/');                 // aaaa-mm-dd → dd/mm/aaaa
+const pd=s=>{const[a,b,c]=s.split('-');return new Date(+a,b-1,+c)};
+const cop=n=>(n<0?'-':'')+'$ '+String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const today=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
+const cat=id=>S.cats.find(c=>c.id===id), goal=id=>S.goals.find(g=>g.id===id);
+const live=()=>S.tx.filter(t=>!t.del);
+
+/* ---------- Quincenas ---------- */
+// Cada quincena empieza en los días de la mesada (15 y 30). Si el mes no tiene ese día (febrero), usa el último día del mes.
+const lastDay=(y,m)=>new Date(y,m+1,0).getDate();
+function period(dt){
+  const a=[];
+  for(let k=-1;k<=1;k++){const x=new Date(dt.getFullYear(),dt.getMonth()+k,1);
+    S.set.dias.forEach(d=>a.push(new Date(x.getFullYear(),x.getMonth(),Math.min(d,lastDay(x.getFullYear(),x.getMonth())))))}
+  a.sort((p,q)=>p-q);
+  let i=0;a.forEach((s,j)=>{if(s<=dt)i=j});
+  const n=a[i+1];
+  return{s:a[i],e:new Date(n.getFullYear(),n.getMonth(),n.getDate()-1)};
+}
+// Cálculo de la quincena: ingreso base, ahorro reservado, lo disponible y lo que queda.
+function calc(p){
+  const a=iso(p.s),b=iso(p.e),T=live().filter(t=>t.f>=a&&t.f<=b);
+  const sum=k=>T.filter(t=>t.k===k).reduce((x,t)=>x+t.m,0);
+  const incR=sum('i'),inc=incR||S.set.mesada,exp=sum('g'),sav=sum('a');
+  const goalA=Math.round(inc*S.set.pct/100),res=Math.max(sav,goalA),disp=inc-res;
+  return{T,incR,inc,exp,sav,res,disp,left:disp-exp};
+}
+
+/* ---------- Estado de pantalla ---------- */
+let V={tab:'home',ref:today(),flt:'all'};
+const go=t=>{V.tab=t;render()};
+function nav(d){const p=period(V.ref);
+  V.ref=d<0?new Date(p.s.getFullYear(),p.s.getMonth(),p.s.getDate()-1):new Date(p.e.getFullYear(),p.e.getMonth(),p.e.getDate()+1);render()}
+
+/* ---------- Pantallas ---------- */
+function vHome(){
+  const p=period(V.ref),c=calc(p),t0=today(),cur=t0>=p.s&&t0<=p.e;
+  const days=cur?Math.round((p.e-t0)/864e5)+1:0;
+  const gh=c.T.filter(t=>t.k==='g'&&t.f===iso(t0)).reduce((x,t)=>x+t.m,0);
+  const daily=days?(c.left+gh)/days:0, hoy=daily-gh;          // presupuesto diario y lo que queda hoy
+  const by={};c.T.filter(t=>t.k==='g').forEach(t=>by[t.c]=(by[t.c]||0)+t.m);
+  const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([id,m])=>{const k=cat(id)||{e:'❔',n:'?'};
+    return `<div class="row"><span>${k.e} ${k.n}</span><div class="bar"><i style="width:${Math.min(100,m/Math.max(c.exp,1)*100)}%"></i></div><b>${cop(m)}</b></div>`}).join('')||'<p class="mu">Aún no hay gastos en esta quincena.</p>';
+  // "Pulso": saldo disponible día a día (arranca lleno y baja con los gastos)
+  const n=Math.round((p.e-p.s)/864e5)+1, lim=cur?n-days+1:n;
+  let acc=0;const pts=['0,6'];
+  for(let i=0;i<lim;i++){const f=iso(new Date(p.s.getFullYear(),p.s.getMonth(),p.s.getDate()+i));
+    acc+=c.T.filter(t=>t.k==='g'&&t.f===f).reduce((x,t)=>x+t.m,0);
+    pts.push((i/Math.max(n-1,1)*300).toFixed(1)+','+(54-Math.max(0,Math.min(1,(c.disp-acc)/Math.max(c.disp,1)))*48).toFixed(1))}
+  const old=live().length&&(!S.set.bk||Date.now()-S.set.bk>30*864e5);
+  return `${old?`<div class="warn" onclick="go('more')">⚠️ Hace más de 30 días sin respaldo. Toca para exportarlo.</div>`:''}
+  <div class="card"><div class="hd"><button onclick="nav(-1)">‹</button><b>${p.s.getDate()} ${MES[p.s.getMonth()]} – ${p.e.getDate()} ${MES[p.e.getMonth()]}</b><button onclick="nav(1)" ${p.e>=t0?'disabled':''}>›</button></div>
+   <small>Te quedan</small><div class="big ${c.left<0?'neg':''}">${cop(c.left)}</div>
+   <small>de ${cop(c.disp)} disponibles · ahorro reservado ${cop(c.res)}</small>
+   <div class="bar"><i style="width:${Math.min(100,c.exp/Math.max(c.disp,1)*100)}%"></i></div>
+   <svg class="ecg" viewBox="0 0 300 60" preserveAspectRatio="none"><polyline points="${pts.join(' ')}"/></svg></div>
+  ${cur?`<div class="card"><small>HOY PUEDES GASTAR</small><div class="mid ${hoy<0?'neg':''}">${cop(Math.max(hoy,0))}</div><small>${cop(Math.max(daily,0))} por día · ${days} día${days>1?'s':''} para cerrar</small></div>`:''}
+  <div class="card stats"><div><small>Ingresos</small><b class="ki">${cop(c.incR)}</b></div><div><small>Gastos</small><b class="kg">${cop(c.exp)}</b></div><div><small>Ahorro</small><b class="ka">${cop(c.sav)}</b><small>${c.inc?Math.round(c.sav/c.inc*100):0}%</small></div></div>
+  <div class="card"><small>POR CATEGORÍA</small>${rows}</div>`;
+}
+
+function vHist(){
+  const L=live().filter(t=>V.flt==='all'||t.k===V.flt).sort((a,b)=>b.f.localeCompare(a.f)||b.u-a.u).slice(0,200);
+  let h='',last='';
+  L.forEach(t=>{
+    if(t.f!==last){last=t.f;h+=`<h4>${t.f===iso(today())?'HOY · ':''}${dm(t.f)}</h4>`}
+    const k=(t.k==='a'?goal(t.c):cat(t.c))||{n:'?'},s=t.k==='g'?'-':t.k==='i'?'+':'→';
+    h+=`<div class="tx" onclick="del('${t.id}')"><span>${k.e||'🎯'} ${esc(k.n)}${t.n?` · <span class="mu">${esc(t.n)}</span>`:''}</span><b class="k${t.k}">${s} ${cop(t.m)}</b></div>`});
+  const F=[['all','Todo'],['g','Gastos'],['i','Ingresos'],['a','Ahorro']];
+  return `<h2 class="t">Historial</h2><div class="fl">${F.map(([k,n])=>`<button class="${V.flt===k?'on':''}" onclick="V.flt='${k}';render()">${n}</button>`).join('')}</div>${h||'<p class="mu" style="margin:20px">Sin registros todavía. Toca + para empezar.</p>'}<p class="mu" style="margin:16px 20px">Toca un registro para eliminarlo.</p>`;
+}
+function del(id){const t=S.tx.find(x=>x.id===id);if(t&&confirm('¿Eliminar este registro?')){t.del=1;t.u=Date.now();save();render()}}
+
+function vGoals(){
+  return `<h2 class="t">Metas</h2>`+S.goals.map(g=>{
+    const s=live().filter(t=>t.k==='a'&&t.c===g.id).reduce((x,t)=>x+t.m,0),pc=g.o?Math.min(100,s/g.o*100):0;
+    return `<div class="card" onclick="editGoal('${g.id}')"><b>${esc(g.n)}</b><div class="bar"><i class="ind" style="width:${pc}%"></i></div><small>${cop(s)} ${g.o?`de ${cop(g.o)} · ${Math.round(pc)}%`:'· toca para definir el monto objetivo'}</small></div>`}).join('')
+   +`<div style="margin:0 16px"><button class="btn" onclick="newGoal()">+ Nueva meta</button></div>`;
+}
+function editGoal(id){const g=goal(id),v=prompt('Monto objetivo en pesos (solo números):',g.o);
+  if(v!==null){g.o=Math.max(0,parseInt(v.replace(/\D/g,''))||0);g.u=Date.now();save();render()}}
+function newGoal(){const n=prompt('Nombre de la meta:');if(!n)return;
+  S.goals.push({id:'m'+Date.now().toString(36),n:n.trim(),o:0,u:Date.now()});save();render()}
+
+function vMore(){const s=S.set;
+  return `<h2 class="t">Más</h2>
+  <div class="card"><b>Mesada</b>
+   <label>Días de llegada (dos días del mes)<div class="two"><input id="d1" type="number" min="1" max="31" value="${s.dias[0]}"><input id="d2" type="number" min="1" max="31" value="${s.dias[1]}"></div></label>
+   <label>Monto por quincena ($)<input id="ms" inputmode="numeric" value="${s.mesada}"></label>
+   <label>Ahorro objetivo (%)<input id="pc" type="number" min="0" max="100" value="${s.pct}"></label>
+   <button class="btn" onclick="saveSet()">Guardar ajustes</button></div>
+  <div class="card"><b>Respaldo</b><br><small>Último respaldo: ${s.bk?dm(iso(new Date(s.bk))):'nunca'}</small>
+   <button class="btn" onclick="expJSON()">Exportar respaldo (JSON)</button>
+   <button class="btn" onclick="expCSV()">Exportar CSV (para Excel)</button>
+   <label class="btn">Importar respaldo (fusiona)<input type="file" accept=".json,application/json" hidden onchange="imp(this.files[0])"></label></div>
+  <div class="card"><button class="btn" id="inst" hidden onclick="instalar()">Instalar app</button><small>Quincena v1 · tus datos viven solo en este dispositivo.</small></div>`;
+}
+function saveSet(){
+  const a=parseInt($('#d1').value),b=parseInt($('#d2').value),m=parseInt($('#ms').value.replace(/\D/g,'')),p=parseInt($('#pc').value);
+  if(!(a>=1&&a<=31&&b>=1&&b<=31)||a===b||isNaN(m)||isNaN(p)||p<0||p>100){alert('Revisa los datos: dos días distintos (1-31), un monto y un % entre 0 y 100.');return}
+  Object.assign(S.set,{dias:[a,b].sort((x,y)=>x-y),mesada:m,pct:p});save();toast('Ajustes guardados');render();
+}
+
+/* ---------- Registro rápido: monto → categoría → guardar ---------- */
+let R={};
+const KN={g:'Gasto',i:'Ingreso',a:'Ahorro'};
+function openReg(){R={k:'g',v:'',c:null,f:iso(today()),n:''};reg();$('#sheet').className='open'}
+function closeReg(){$('#sheet').className=''}
+function reg(){
+  const list=R.k==='a'?S.goals.map(g=>({id:g.id,e:'🎯',n:g.n})):S.cats.filter(c=>c.t===R.k);
+  $('#sheet').innerHTML=`<div class="top"><button onclick="closeReg()">✕</button><div class="tabs">${Object.keys(KN).map(k=>`<button class="${R.k===k?'on':''}" onclick="R.k='${k}';R.c=null;reg()">${KN[k]}</button>`).join('')}</div></div>
+   <div class="amt k${R.k}">${cop(+R.v||0)}</div>
+   <div class="chips">${list.map(c=>`<button class="${R.c===c.id?'on':''}" onclick="R.c='${c.id}';reg()">${c.e} ${esc(c.n)}</button>`).join('')}</div>
+   <div class="two"><input placeholder="Nota (opcional)" value="${esc(R.n)}" oninput="R.n=this.value"><input type="date" value="${R.f}" onchange="R.f=this.value"></div>
+   <div class="pad">${['1','2','3','4','5','6','7','8','9','000','0','⌫'].map(k=>`<button onclick="key('${k}')">${k}</button>`).join('')}</div>
+   <button class="btn go" ${+R.v&&R.c?'':'disabled'} onclick="saveTx()">Guardar</button>`;
+}
+function key(k){R.v=(k==='⌫'?R.v.slice(0,-1):(R.v+k).replace(/^0+/,'')).slice(0,9);reg()}
+function saveTx(){
+  const t={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),k:R.k,m:+R.v,c:R.c,f:R.f||iso(today()),n:R.n.trim(),u:Date.now(),del:0};
+  S.tx.push(t);save();closeReg();V.ref=today();render();
+  if(navigator.vibrate)navigator.vibrate(20);
+  toast(`${KN[t.k]} de ${cop(t.m)} guardado`,()=>{t.del=1;t.u=Date.now();save();render()});
+}
+
+/* ---------- Respaldo: exportar / importar ---------- */
+function dl(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click()}
+function expJSON(){S.set.bk=Date.now();save();dl('quincena-respaldo-'+iso(today())+'.json',JSON.stringify(S),'application/json');render()}
+function expCSV(){
+  const q=x=>'"'+String(x).replace(/"/g,'""')+'"';
+  const rows=live().sort((a,b)=>a.f.localeCompare(b.f)).map(t=>{const k=(t.k==='a'?goal(t.c):cat(t.c))||{n:''};
+    return [dm(t.f),KN[t.k],k.n,t.m,t.n||''].map(q).join(';')});
+  dl('quincena-'+iso(today())+'.csv','\ufeff'+['Fecha;Tipo;Categoría;Monto;Nota'].concat(rows).join('\r\n'),'text/csv');
+}
+// Fusiona: agrega lo nuevo y conserva la versión más reciente de cada registro (por id). No duplica.
+function imp(f){if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tx))throw 0;let n=0;
+    const mg=(a,b)=>(b||[]).forEach(x=>{const y=a.find(z=>z.id===x.id);if(!y){a.push(x);n++}else if((x.u||0)>(y.u||0)){Object.assign(y,x);n++}});
+    mg(S.tx,d.tx);mg(S.goals,d.goals);mg(S.cats,d.cats);save();render();toast('Importado: '+n+' cambios')}
+   catch(e){alert('Ese archivo no es un respaldo válido de Quincena.')}};
+  r.readAsText(f);
+}
+
+/* ---------- Avisos, render e instalación ---------- */
+let tt;
+function toast(m,u){const e=$('#toast');e.innerHTML=esc(m)+(u?' <button id="un">Deshacer</button>':'');e.className='show';
+  if(u)$('#un').onclick=()=>{u();e.className=''};clearTimeout(tt);tt=setTimeout(()=>e.className='',4500)}
+let ip;addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e;if($('#inst'))$('#inst').hidden=false});
+function instalar(){if(ip)ip.prompt()}
+function render(){
+  $('#app').innerHTML=({home:vHome,hist:vHist,goals:vGoals,more:vMore})[V.tab]();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===V.tab));
+  $('#fab').style.display=V.tab==='more'?'none':'block';
+  if(ip&&$('#inst'))$('#inst').hidden=false;
+}
+render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
