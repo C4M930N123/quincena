@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B1020">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <title>Quincena</title>
 <style>
-:root{--bg:#0B1020;--card:#141B2F;--tx:#F2F5FA;--mu:#8A93A8;--mint:#3DDC97;--red:#FF6B6B;--ind:#7C8CFF;--amb:#FFC857}
+:root{--bg:#0F1214;--card:#171B1E;--tx:#ECF1F2;--mu:#8B989D;--mint:#35D0C8;--red:#FF7A70;--ind:#6FB7FF;--amb:#FFC857;--trk:#262D31;--btn:#262E33;--line:#21292D;--nav:#12161A;--on:#04201F;--wbg:#3a2f12}
+[data-th=carbon]{--bg:#000;--card:#111314;--tx:#F2F5F5;--mu:#8C9296;--mint:#2FE6D6;--red:#FF6F61;--ind:#66B2FF;--trk:#23272A;--btn:#23282B;--line:#1B1F21;--nav:#070808;--on:#002321}
+[data-th=niebla]{--bg:#EDF0F1;--card:#FFFFFF;--tx:#12181A;--mu:#5E6C71;--mint:#0A9AA6;--red:#D64B45;--ind:#3567C9;--amb:#9A6212;--trk:#DCE3E5;--btn:#E1E8EA;--line:#E1E7E9;--nav:#FFFFFF;--on:#FFFFFF;--wbg:#FBEFD5}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--tx);font:16px system-ui,-apple-system,Roboto,sans-serif;font-variant-numeric:tabular-nums;padding:env(safe-area-inset-top) 0 120px}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
@@ -19,36 +22,42 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .neg{color:var(--red)}.kg{color:var(--red)}.ki{color:var(--mint)}.ka{color:var(--ind)}
 .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .hd button{font-size:26px;padding:0 12px}.hd button:disabled{opacity:.25}
-.bar{height:8px;background:#222B45;border-radius:9px;overflow:hidden;margin:10px 0}
+.bar{height:8px;background:var(--trk);border-radius:9px;overflow:hidden;margin:10px 0}
 .bar i{display:block;height:100%;background:var(--mint)}.bar i.ind{background:var(--ind)}
 .ecg{width:100%;height:60px}
 .ecg polyline{fill:none;stroke:var(--mint);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 0 4px var(--mint))}
 .stats{display:flex;justify-content:space-between;text-align:center}.stats div{display:flex;flex-direction:column;gap:2px}
 .row{display:grid;grid-template-columns:1fr 60px auto;gap:10px;align-items:center;margin-top:10px}.row .bar{margin:0}
-.warn{margin:12px 16px;padding:12px;border-radius:14px;background:#3a2f12;color:var(--amb);font-size:14px}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0e1427;border-top:1px solid #1d2640;padding-bottom:env(safe-area-inset-bottom)}
+.warn{margin:12px 16px;padding:12px;border-radius:14px;background:var(--wbg);color:var(--amb);font-size:14px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--nav);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
 nav button{flex:1;padding:14px 0;color:var(--mu);font-size:13px}nav button.on{color:var(--mint)}
-#fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;background:var(--mint);color:#06281a;font-size:34px;box-shadow:0 6px 20px #3ddc9755}
+#fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;background:var(--mint);color:var(--on);font-size:34px;box-shadow:0 6px 20px #0004}
 #sheet{display:none;position:fixed;inset:0;background:var(--bg);z-index:9;overflow:auto;padding:env(safe-area-inset-top) 16px 16px}#sheet.open{display:block}
 .top{display:flex;align-items:center;gap:8px;margin:8px 0}.top>button{font-size:22px;padding:8px 12px}
-.tabs{flex:1;display:flex;background:var(--card);border-radius:14px;padding:4px}.tabs button{flex:1;padding:10px;border-radius:10px}.tabs .on{background:#243053}
+.tabs{flex:1;display:flex;background:var(--card);border-radius:14px;padding:4px}.tabs button{flex:1;padding:10px;border-radius:10px}.tabs .on{background:var(--btn)}
 .amt{font-size:46px;font-weight:700;text-align:center;margin:14px 0}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .chips button{background:var(--card);padding:11px 14px;border-radius:14px;min-height:48px}.chips .on{outline:2px solid var(--mint)}
-input{width:100%;font:inherit;color:var(--tx);background:var(--card);border:1px solid #243053;border-radius:12px;padding:12px}
+input{width:100%;font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--btn);border-radius:12px;padding:12px}
 .two{display:flex;gap:8px;margin-bottom:10px}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}.pad button{background:var(--card);border-radius:14px;padding:16px;font-size:22px}
-.btn{display:block;width:100%;text-align:center;background:#243053;color:var(--tx);font-size:16px;border-radius:14px;padding:14px;margin-top:10px}
-.go{background:var(--mint);color:#06281a;font-weight:700}.btn:disabled{opacity:.35}
+.btn{display:block;width:100%;text-align:center;background:var(--btn);color:var(--tx);font-size:16px;border-radius:14px;padding:14px;margin-top:10px}
+.go{background:var(--mint);color:var(--on);font-weight:700}.btn:disabled{opacity:.35}
 label{display:block;margin-top:10px;font-size:13px;color:var(--mu)}label input{margin-top:4px}
 h4{margin:16px 20px 4px;color:var(--mu);font-size:13px}
 .tx{display:flex;justify-content:space-between;gap:8px;margin:0 16px 6px;padding:12px;background:var(--card);border-radius:14px}
-.fl{display:flex;gap:8px;padding:12px 16px;overflow-x:auto}.fl button{background:var(--card);padding:8px 14px;border-radius:99px;white-space:nowrap}.fl .on{background:#243053}
-#toast{position:fixed;left:16px;right:16px;bottom:90px;background:#243053;padding:14px;border-radius:14px;display:none;z-index:20}
+.fl{display:flex;gap:8px;padding:12px 16px;overflow-x:auto}.fl button{background:var(--card);padding:8px 14px;border-radius:99px;white-space:nowrap}.fl .on{background:var(--btn)}
+#toast{position:fixed;left:16px;right:16px;bottom:90px;background:var(--btn);padding:14px;border-radius:14px;display:none;z-index:20}
 #toast.show{display:block}#toast button{color:var(--mint);float:right;font-weight:700}
-.tr{display:grid;grid-template-columns:44px 1fr 1fr 1fr;gap:4px;padding:7px 0;border-bottom:1px solid #1d2640;font-size:14px;text-align:right}
+.tr{display:grid;grid-template-columns:34px repeat(4,minmax(0,1fr));gap:2px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12px;text-align:right}
 .tr span:first-child{text-align:left;color:var(--mu)}.tr.h{color:var(--mu);font-size:12px}
 .tr.tot{font-weight:700;border-bottom:0}.tr.tot span:first-child{color:var(--tx)}
+body{max-width:520px;margin:0 auto}
+nav{left:50%;right:auto;width:100%;max-width:520px;transform:translateX(-50%)}
+#fab{right:max(18px,calc(50% - 242px))}
+#sheet{padding-left:max(16px,calc(50% - 244px));padding-right:max(16px,calc(50% - 244px))}
+#toast{left:max(16px,calc(50% - 244px));right:max(16px,calc(50% - 244px))}
+.amt{display:flex;justify-content:center;align-items:center}
 </style>
 </head>
 <body>
@@ -71,14 +80,55 @@ const KEY='quincena.v1', $=s=>document.querySelector(s);
 /* ---------- Datos (localStorage) ---------- */
 // Dinero en pesos enteros. Fechas 'aaaa-mm-dd'. Cada registro lleva id, u (última edición) y del (borrado) para poder fusionar respaldos.
 const defaults=()=>({
-  set:{dias:[15,30],mesada:50000,pct:10,bk:null},
+  set:{dias:[15,30],mesada:50000,ahorro:5000,th:'grafito',bk:null},
   cats:[['g','🍔','Comida'],['g','🚌','Transporte'],['g','📚','Universidad'],['g','🎉','Salidas'],['g','🎮','Ocio'],['g','📱','Suscripciones'],['g','💊','Salud'],['g','✨','Otros'],
         ['i','💵','Mesada'],['i','💰','Extra'],['i','📈','Rendimientos']].map(([t,e,n],i)=>({id:t+i,t,e,n})),
-  goals:[['Fondo de emergencia',150000],['Meta 2 años',0],['Meta 5 años',0]].map(([n,o],i)=>({id:'m'+i,n,o,u:0})),
+  goals:[['Fondo de emergencia',150000,'a'],['Inversión Trii',0,'v']].map(([n,o,t],i)=>({id:'m'+i,n,o,t,u:0})),
   tx:[]
 });
-let S; try{S=JSON.parse(localStorage.getItem(KEY))||defaults()}catch(e){S=defaults()}
-const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+/* ---------- Almacenamiento cifrado (AES-GCM 256) ----------
+   Datos cifrados en localStorage; la llave (no exportable) vive en IndexedDB de este dispositivo. */
+const CS=!!(window.crypto&&crypto.subtle&&window.indexedDB),ENC='quincena.v2e';
+let S=defaults(),ready=false,bad=false,Q=Promise.resolve();
+function migrate(){const s=S.set;
+ if(s.ahorro===undefined)s.ahorro=Math.round(s.mesada*(s.pct||0)/100);
+ if(!s.th)s.th='grafito';document.documentElement.dataset.th=s.th;
+ S.cats.forEach(c=>{if(c.b===undefined)c.b=0;if(c.x===undefined)c.x=0});
+ S.goals.forEach(g=>{if(!g.t)g.t='a'});
+ const m1=S.goals.find(g=>g.id==='m1'),m2=S.goals.find(g=>g.id==='m2');
+ if(m1&&m1.n==='Meta 2 años'){m1.n='Inversión Trii';m1.t='v';m1.o=0;m1.u=Date.now()}
+ if(m2&&m2.n==='Meta 5 años'){S.tx.forEach(t=>{if(t.c==='m2'){t.c='m1';t.u=Date.now()}});S.goals=S.goals.filter(g=>g.id!=='m2')}
+}
+const idb=()=>new Promise((ok,no)=>{const r=indexedDB.open('quincena-k',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+const kget=async()=>{const d=await idb();return new Promise((ok,no)=>{const r=d.transaction('k').objectStore('k').get('main');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})};
+const kput=async k=>{const d=await idb();return new Promise((ok,no)=>{const t=d.transaction('k','readwrite');t.objectStore('k').put(k,'main');t.oncomplete=ok;t.onerror=()=>no(t.error)})};
+async function getKey(){let k=await kget();if(!k){k=await crypto.subtle.generateKey({name:'AES-GCM',length:256},false,['encrypt','decrypt']);await kput(k)}return k}
+const b64=u=>{let t='';for(const c of u)t+=String.fromCharCode(c);return btoa(t)};
+const ub=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
+async function enc(o){const k=await getKey(),iv=crypto.getRandomValues(new Uint8Array(12));
+ const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(o))));
+ return JSON.stringify({v:1,iv:b64(iv),ct:b64(ct)})}
+async function dec(t,k){const o=JSON.parse(t);return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:ub(o.iv)},k,ub(o.ct))))}
+// Guarda en cola, una escritura tras otra. Si el cifrado no está disponible, guarda sin cifrar para no perder datos.
+function save(){if(!ready||bad)return;Q=Q.then(async()=>{try{if(!CS)throw 0;localStorage.setItem(ENC,await enc(S))}catch(e){localStorage.setItem(KEY,JSON.stringify(S))}})}
+async function boot(){
+  try{
+    const raw=localStorage.getItem(ENC),old=localStorage.getItem(KEY);
+    if(raw){if(!CS)throw 0;const k=await kget();if(!k)throw 0;S=await dec(raw,k);localStorage.removeItem(KEY)}
+    else if(old){try{S=JSON.parse(old)}catch(e){}}
+    migrate();ready=true;
+    if(CS&&old&&!raw){try{const t=await enc(S),k=await kget();   // texto plano → cifrado; borra el original solo si se verificó
+      if(JSON.stringify(await dec(t,k))===JSON.stringify(S)){localStorage.setItem(ENC,t);localStorage.removeItem(KEY)}}catch(e){}}
+  }catch(e){bad=true}
+  applyTh();
+  if(bad){document.querySelector('nav').style.display='none';$('#fab').style.display='none';$('#app').innerHTML=vBad()}else render();
+}
+const vBad=()=>`<div class="card"><b>No se pudieron abrir tus datos</b><br><small>Están cifrados y este navegador ya no tiene la llave (por ejemplo, tras borrar datos del sitio). Si tienes un respaldo, impórtalo; si no, puedes empezar de cero.</small>
+ <label class="btn">Importar respaldo<input type="file" accept=".json,application/json" hidden onchange="rescue(this.files[0])"></label>
+ <button class="btn" onclick="rescue(null)">Empezar de cero</button></div>`;
+function rescue(f){if(!f&&!confirm('Esto borra los datos cifrados que no se pueden abrir. ¿Continuar?'))return;
+  S=defaults();migrate();bad=false;ready=true;localStorage.removeItem(ENC);
+  document.querySelector('nav').style.display='';V.tab='home';if(f)imp(f);else{save();render()}}
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist(); // pide que el navegador no borre los datos
 
 /* ---------- Utilidades ---------- */
@@ -86,7 +136,10 @@ const pad=n=>String(n).padStart(2,'0');
 const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const dm=s=>s.split('-').reverse().join('/');                 // aaaa-mm-dd → dd/mm/aaaa
 const pd=s=>{const[a,b,c]=s.split('-');return new Date(+a,b-1,+c)};
-const cop=n=>(n<0?'-':'')+'$ '+String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const r2=n=>Math.round(n*100)/100;
+const ds=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const cop=n=>{const r=Math.round(Math.abs(n)*100),f=r%100;return(n<0&&r?'-':'')+'$ '+ds(Math.floor(r/100))+(f?','+pad(f):'')};
+const pm=s=>{s=String(s).trim();if(s.includes(','))return +s.replace(/\./g,'').replace(',','.')||0;if(/\.\d{1,2}$/.test(s))return +s||0;return +s.replace(/\./g,'')||0};
 const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const today=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
@@ -108,10 +161,10 @@ function period(dt){
 // Cálculo de la quincena: ingreso base, ahorro reservado, lo disponible y lo que queda.
 function calc(p){
   const a=iso(p.s),b=iso(p.e),T=live().filter(t=>t.f>=a&&t.f<=b);
-  const sum=k=>T.filter(t=>t.k===k).reduce((x,t)=>x+t.m,0);
+  const sum=k=>r2(T.filter(t=>t.k===k).reduce((x,t)=>x+t.m,0));
   const incR=sum('i'),inc=incR||S.set.mesada,exp=sum('g'),sav=sum('a');
-  const goalA=Math.round(inc*S.set.pct/100),res=Math.max(sav,goalA),disp=inc-res;
-  return{T,incR,inc,exp,sav,res,disp,left:disp-exp};
+  const res=Math.max(sav,Math.min(S.set.ahorro,inc)),disp=r2(inc-res);
+  return{T,incR,inc,exp,sav,res,disp,left:r2(disp-exp)};
 }
 
 /* ---------- Estado de pantalla ---------- */
@@ -126,9 +179,11 @@ function vHome(){
   const days=cur?Math.round((p.e-t0)/864e5)+1:0;
   const gh=c.T.filter(t=>t.k==='g'&&t.f===iso(t0)).reduce((x,t)=>x+t.m,0);
   const daily=days?(c.left+gh)/days:0, hoy=daily-gh;          // presupuesto diario y lo que queda hoy
-  const by={};c.T.filter(t=>t.k==='g').forEach(t=>by[t.c]=(by[t.c]||0)+t.m);
-  const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([id,m])=>{const k=cat(id)||{e:'❔',n:'?'};
-    return `<div class="row"><span>${k.e} ${k.n}</span><div class="bar"><i style="width:${Math.min(100,m/Math.max(c.exp,1)*100)}%"></i></div><b>${cop(m)}</b></div>`}).join('')||'<p class="mu">Aún no hay gastos en esta quincena.</p>';
+  const by={};c.T.filter(t=>t.k==='g').forEach(t=>by[t.c]=r2((by[t.c]||0)+t.m));
+  S.cats.filter(k=>k.t==='g'&&k.b>0&&!k.x&&!(k.id in by)).forEach(k=>by[k.id]=0);
+  const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([id,m])=>{const k=cat(id)||{e:'❔',n:'?',b:0},pc=k.b?m/k.b:0;
+    const col=!k.b||pc<.8?'var(--mint)':pc<=1?'var(--amb)':'var(--red)',w=k.b?Math.min(100,pc*100):Math.min(100,m/Math.max(c.exp,1)*100);
+    return `<div class="row"><span>${k.e} ${esc(k.n)}</span><div class="bar"><i style="width:${w}%;background:${col}"></i></div><b>${cop(m)}${k.b?`<small> / ${cop(k.b)}</small>`:''}</b></div>`}).join('')||'<p class="mu">Aún no hay gastos en esta quincena.</p>';
   // "Pulso": saldo disponible día a día (arranca lleno y baja con los gastos)
   const n=Math.round((p.e-p.s)/864e5)+1, lim=cur?n-days+1:n;
   let acc=0;const pts=['0,6'];
@@ -152,20 +207,20 @@ function vSumm(){
   const y=V.yr,M=Array.from({length:12},()=>({i:0,g:0,a:0})),by={};
   live().filter(t=>t.f.slice(0,4)==y).forEach(t=>{M[+t.f.slice(5,7)-1][t.k]+=t.m;if(t.k==='g')by[t.c]=(by[t.c]||0)+t.m});
   const T=M.reduce((s,m)=>({i:s.i+m.i,g:s.g+m.g,a:s.a+m.a}),{i:0,g:0,a:0});
-  const mx=Math.max(1,...M.map(m=>Math.max(m.i,m.g)));
+  const mx=Math.max(1,...M.map(m=>Math.max(m.i,m.g,m.a)));
   const sh=n=>n>=1e6?(n/1e6).toFixed(1).replace('.',',')+'M':Math.round(n/1000)+'k';
-  const f=v=>v?(v<0?'-':'')+String(Math.abs(Math.round(v))).replace(/\B(?=(\d{3})+(?!\d))/g,'.'):'—';
-  const row=(l,i,g,b,c)=>`<div class="tr ${c||''}"><span>${l}</span><span class="ki">${f(i)}</span><span class="kg">${f(g)}</span><span class="${b<0?'kg':'ki'}">${f(b)}</span></div>`;
-  const rows=M.map((m,k)=>row(MES[k][0].toUpperCase()+MES[k].slice(1),m.i,m.g,m.i-m.g)).join('');
-  const grid=[0,.5,1].map(q=>`<line x1="30" x2="336" y1="${110-q*100}" y2="${110-q*100}" stroke="#222B45"/><text x="26" y="${113-q*100}" text-anchor="end" fill="#8A93A8" font-size="8">${sh(mx*q)}</text>`).join('');
-  const bars=M.map((m,k)=>{const x=34+k*25;return `<rect x="${x}" y="${110-m.i/mx*100}" width="9" height="${m.i/mx*100}" fill="#3DDC97" rx="2"/><rect x="${x+10}" y="${110-m.g/mx*100}" width="9" height="${m.g/mx*100}" fill="#FF6B6B" rx="2"/><text x="${x+10}" y="124" text-anchor="middle" fill="#8A93A8" font-size="8">${MES[k]}</text>`}).join('');
+  const f=v=>{const r=Math.round(Math.abs(v)*100),d=r%100;return r?(v<0?'-':'')+ds(Math.floor(r/100))+(d?','+pad(d):''):'—'};
+  const row=(l,i,g,a,b,c)=>`<div class="tr ${c||''}"><span>${l}</span><span class="ki">${f(i)}</span><span class="kg">${f(g)}</span><span class="ka">${f(a)}</span><span class="${b<0?'kg':'ki'}">${f(b)}</span></div>`;
+  const rows=M.map((m,k)=>row(MES[k][0].toUpperCase()+MES[k].slice(1),m.i,m.g,m.a,r2(m.i-m.g-m.a))).join('');
+  const grid=[0,.5,1].map(q=>`<line x1="30" x2="336" y1="${110-q*100}" y2="${110-q*100}" style="stroke:var(--trk)"/><text x="26" y="${113-q*100}" text-anchor="end" style="fill:var(--mu)" font-size="8">${sh(mx*q)}</text>`).join('');
+  const bars=M.map((m,k)=>{const x=33+k*25,h=v=>v/mx*100;return `<rect x="${x}" y="${110-h(m.i)}" width="7" height="${h(m.i)}" style="fill:var(--mint)" rx="2"/><rect x="${x+8}" y="${110-h(m.g)}" width="7" height="${h(m.g)}" style="fill:var(--red)" rx="2"/><rect x="${x+16}" y="${110-h(m.a)}" width="7" height="${h(m.a)}" style="fill:var(--ind)" rx="2"/><text x="${x+11}" y="124" text-anchor="middle" style="fill:var(--mu)" font-size="8">${MES[k]}</text>`}).join('');
   const cr=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([id,m])=>{const k=cat(id)||{e:'❔',n:'?'};
     return `<div class="row"><span>${k.e} ${k.n}</span><div class="bar"><i style="width:${m/Math.max(T.g,1)*100}%"></i></div><b>${Math.round(m/Math.max(T.g,1)*100)}%</b></div>`}).join('')||'<p class="mu">Sin gastos este año.</p>';
   return `<h2 class="t">Resumen</h2>
   <div class="card"><div class="hd"><button onclick="V.yr--;render()">‹</button><b>${y}</b><button onclick="V.yr++;render()" ${y>=today().getFullYear()?'disabled':''}>›</button></div>
-   <div class="tr h"><span>Mes</span><span>Ingresos</span><span>Egresos</span><span>Balance</span></div>${rows}${row('Total',T.i,T.g,T.i-T.g,'tot')}
-   <small>Balance = ingresos − egresos. Ahorro del año: ${cop(T.a)} (${T.i?Math.round(T.a/T.i*100):0}% de tus ingresos)</small></div>
-  <div class="card"><small>INGRESOS vs EGRESOS</small><svg viewBox="0 0 340 130" style="width:100%;margin-top:8px">${grid}${bars}</svg><small><span class="ki">●</span> Ingresos &nbsp; <span class="kg">●</span> Egresos</small></div>
+   <div class="tr h"><span>Mes</span><span>Ingresos</span><span>Egresos</span><span>Ahorro</span><span>Balance</span></div>${rows}${row('Total',T.i,T.g,T.a,r2(T.i-T.g-T.a),'tot')}
+   <small>Balance = ingresos − egresos − ahorro (lo que ya apartaste, incluidos tus aportes a Trii). Ahorrado en el año: ${cop(T.a)} (${T.i?Math.round(T.a/T.i*100):0}% de tus ingresos)</small></div>
+  <div class="card"><small>INGRESOS, EGRESOS Y AHORRO</small><svg viewBox="0 0 340 130" style="width:100%;margin-top:8px">${grid}${bars}</svg><small><span class="ki">●</span> Ingresos &nbsp; <span class="kg">●</span> Egresos &nbsp; <span class="ka">●</span> Ahorro</small></div>
   <div class="card"><small>GASTOS POR CATEGORÍA · ${y}</small>${cr}</div>`;
 }
 
@@ -175,62 +230,97 @@ function vHist(){
   L.forEach(t=>{
     if(t.f!==last){last=t.f;h+=`<h4>${t.f===iso(today())?'HOY · ':''}${dm(t.f)}</h4>`}
     const k=(t.k==='a'?goal(t.c):cat(t.c))||{n:'?'},s=t.k==='g'?'-':t.k==='i'?'+':'→';
-    h+=`<div class="tx" onclick="del('${t.id}')"><span>${k.e||'🎯'} ${esc(k.n)}${t.n?` · <span class="mu">${esc(t.n)}</span>`:''}</span><b class="k${t.k}">${s} ${cop(t.m)}</b></div>`});
+    h+=`<div class="tx" onclick="edit('${t.id}')"><span>${k.e||'🎯'} ${esc(k.n)}${t.n?` · <span class="mu">${esc(t.n)}</span>`:''}</span><b class="k${t.k}">${s} ${cop(t.m)}</b></div>`});
   const F=[['all','Todo'],['g','Gastos'],['i','Ingresos'],['a','Ahorro']];
-  return `<h2 class="t">Historial</h2><div class="fl">${F.map(([k,n])=>`<button class="${V.flt===k?'on':''}" onclick="V.flt='${k}';render()">${n}</button>`).join('')}</div>${h||'<p class="mu" style="margin:20px">Sin registros todavía. Toca + para empezar.</p>'}<p class="mu" style="margin:16px 20px">Toca un registro para eliminarlo.</p>`;
+  return `<h2 class="t">Historial</h2><div class="fl">${F.map(([k,n])=>`<button class="${V.flt===k?'on':''}" onclick="V.flt='${k}';render()">${n}</button>`).join('')}</div>${h||'<p class="mu" style="margin:20px">Sin registros todavía. Toca + para empezar.</p>'}<p class="mu" style="margin:16px 20px">Toca un registro para editarlo o eliminarlo.</p>`;
 }
-function del(id){const t=S.tx.find(x=>x.id===id);if(t&&confirm('¿Eliminar este registro?')){t.del=1;t.u=Date.now();save();render()}}
+function del(id){const t=S.tx.find(x=>x.id===id);if(t&&confirm('¿Eliminar este registro?')){t.del=1;t.u=Date.now();save();render();return true}}
 
 function vGoals(){
-  return `<h2 class="t">Metas</h2>`+S.goals.map(g=>{
-    const s=live().filter(t=>t.k==='a'&&t.c===g.id).reduce((x,t)=>x+t.m,0),pc=g.o?Math.min(100,s/g.o*100):0;
-    return `<div class="card" onclick="editGoal('${g.id}')"><b>${esc(g.n)}</b><div class="bar"><i class="ind" style="width:${pc}%"></i></div><small>${cop(s)} ${g.o?`de ${cop(g.o)} · ${Math.round(pc)}%`:'· toca para definir el monto objetivo'}</small></div>`}).join('')
-   +`<div style="margin:0 16px"><button class="btn" onclick="newGoal()">+ Nueva meta</button></div>`;
+  const card=g=>{const ap=r2(live().filter(t=>t.k==='a'&&t.c===g.id).reduce((x,t)=>x+t.m,0));
+   if(g.t==='v'){const gn=g.val?r2(g.val-ap):0;
+    return `<div class="card" onclick="editGoal('${g.id}')"><b>📈 ${esc(g.n)}</b>
+     <div class="stats" style="margin-top:10px;font-size:14px"><div><small>Aportado</small><b>${cop(ap)}</b></div><div><small>Valor actual</small><b>${g.val?cop(g.val):'—'}</b></div><div><small>Ganancia</small><b class="${gn<0?'kg':'ki'}">${g.val?cop(gn)+' · '+(ap?(gn/ap*100).toFixed(1).replace('.',','):0)+'%':'—'}</b></div></div>
+     ${g.o?`<div class="bar"><i class="ind" style="width:${Math.min(100,ap/g.o*100)}%"></i></div><small>Meta ${cop(g.o)}</small><br>`:''}<small>${g.vf?'Valor actualizado el '+dm(g.vf):'Toca para anotar el valor actual de Trii'}</small></div>`}
+   const pc=g.o?Math.min(100,ap/g.o*100):0;
+   return `<div class="card" onclick="editGoal('${g.id}')"><b>🛟 ${esc(g.n)}</b><div class="bar"><i class="ind" style="width:${pc}%"></i></div><small>${cop(ap)} ${g.o?`de ${cop(g.o)} · ${Math.round(pc)}%`:'· toca para definir el monto objetivo'}</small></div>`};
+  return `<h2 class="t">Metas</h2>${S.goals.map(card).join('')}<div style="margin:0 16px"><button class="btn" onclick="newGoal('a')">+ Meta de ahorro</button><button class="btn" onclick="newGoal('v')">+ Meta de inversión</button></div>`;
 }
-function editGoal(id){const g=goal(id),v=prompt('Monto objetivo en pesos (solo números):',g.o);
-  if(v!==null){g.o=Math.max(0,parseInt(v.replace(/\D/g,''))||0);g.u=Date.now();save();render()}}
-function newGoal(){const n=prompt('Nombre de la meta:');if(!n)return;
-  S.goals.push({id:'m'+Date.now().toString(36),n:n.trim(),o:0,u:Date.now()});save();render()}
+function editGoal(id){const g=goal(id);
+  const n=prompt('Nombre de la meta:',g.n);if(n===null)return;
+  const o=prompt('Monto objetivo en pesos (0 = sin meta):',String(g.o).replace('.',','));if(o===null)return;
+  g.n=n.trim()||g.n;g.o=Math.max(0,pm(o));
+  if(g.t==='v'){const v=prompt('Valor actual de tu portafolio en Trii (vacío = no cambiar):','');if(v&&v.trim()){g.val=Math.max(0,pm(v));g.vf=iso(today())}}
+  g.u=Date.now();save();render()}
+function newGoal(t){const n=prompt(t==='v'?'Nombre de la inversión (ej. Trii acciones):':'Nombre de la meta de ahorro:');if(!n)return;
+  S.goals.push({id:'m'+Date.now().toString(36),n:n.trim(),o:0,t,u:Date.now()});save();render()}
 
 function vMore(){const s=S.set;
+  const cl=t=>S.cats.filter(c=>c.t===t&&!c.x).map(c=>`<div class="tx" style="margin:0 0 6px" onclick="editCat('${c.id}')"><span>${c.e} ${esc(c.n)}</span><small>${c.b?'tope '+cop(c.b):c.t==='g'?'sin tope':''}</small></div>`).join('');
   return `<h2 class="t">Más</h2>
   <div class="card"><b>Mesada</b>
    <label>Días de llegada (dos días del mes)<div class="two"><input id="d1" type="number" min="1" max="31" value="${s.dias[0]}"><input id="d2" type="number" min="1" max="31" value="${s.dias[1]}"></div></label>
-   <label>Monto por quincena ($)<input id="ms" inputmode="numeric" value="${s.mesada}"></label>
-   <label>Ahorro objetivo (%)<input id="pc" type="number" min="0" max="100" value="${s.pct}"></label>
+   <label>Monto por quincena ($)<input id="ms" inputmode="decimal" value="${String(s.mesada).replace('.',',')}"></label>
+   <label>Ahorro por quincena ($)<input id="pc" inputmode="decimal" value="${String(s.ahorro).replace('.',',')}"></label>
    <button class="btn" onclick="saveSet()">Guardar ajustes</button></div>
+  <div class="card"><b>Apariencia</b><div class="chips" style="margin:10px 0 0">${[['grafito','Grafito'],['carbon','Carbón'],['niebla','Niebla']].map(([k,n])=>`<button class="${s.th===k?'on':''}" onclick="setTh('${k}')">${n}</button>`).join('')}</div></div>
+  <div class="card"><b>Categorías de gasto</b><br><small>Toca una para editarla, ponerle un tope por quincena u ocultarla.</small><div style="margin-top:8px">${cl('g')}</div><button class="btn" onclick="newCat('g')">+ Categoría de gasto</button></div>
+  <div class="card"><b>Categorías de ingreso</b><div style="margin-top:8px">${cl('i')}</div><button class="btn" onclick="newCat('i')">+ Categoría de ingreso</button></div>
   <div class="card"><b>Respaldo</b><br><small>Último respaldo: ${s.bk?dm(iso(new Date(s.bk))):'nunca'}</small>
    <button class="btn" onclick="expJSON()">Exportar respaldo (JSON)</button>
    <button class="btn" onclick="expCSV()">Exportar CSV (para Excel)</button>
    <label class="btn">Importar respaldo (fusiona)<input type="file" accept=".json,application/json" hidden onchange="imp(this.files[0])"></label></div>
-  <div class="card"><button class="btn" id="inst" hidden onclick="instalar()">Instalar app</button><small>Quincena v1 · tus datos viven solo en este dispositivo.</small></div>`;
+  <div class="card"><button class="btn" id="inst" hidden onclick="instalar()">Instalar app</button><small>Quincena v3 · datos cifrados en este dispositivo y sin conexión a internet.</small></div>`;
 }
 function saveSet(){
-  const a=parseInt($('#d1').value),b=parseInt($('#d2').value),m=parseInt($('#ms').value.replace(/\D/g,'')),p=parseInt($('#pc').value);
-  if(!(a>=1&&a<=31&&b>=1&&b<=31)||a===b||isNaN(m)||isNaN(p)||p<0||p>100){alert('Revisa los datos: dos días distintos (1-31), un monto y un % entre 0 y 100.');return}
-  Object.assign(S.set,{dias:[a,b].sort((x,y)=>x-y),mesada:m,pct:p});save();toast('Ajustes guardados');render();
-}
+  const a=parseInt($('#d1').value),b=parseInt($('#d2').value),m=pm($('#ms').value),p=pm($('#pc').value);
+  if(!(a>=1&&a<=31&&b>=1&&b<=31)||a===b||m<=0||p<0||p>m){alert('Revisa los datos: dos días distintos (1-31), una mesada mayor que 0 y un ahorro que no supere la mesada.');return}
+  Object.assign(S.set,{dias:[a,b].sort((x,y)=>x-y),mesada:m,ahorro:p});save();toast('Ajustes guardados');render()}
+function setTh(k){S.set.th=k;save();applyTh();render()}
+function applyTh(){document.documentElement.dataset.th=S.set.th;const m=document.querySelector('meta[name=theme-color]');if(m)m.content=getComputedStyle(document.body).backgroundColor}
+const parseCat=n=>{const m=n.trim().match(/^(\S+)\s+(.+)$/);return m?[m[1],m[2]]:['🔹',n.trim()]};
+function editCat(id){const c=cat(id);
+  const o=prompt(c.e+' '+c.n+'\n1 = editar nombre y tope\n2 = ocultar categoría','1');
+  if(o==='2'){c.x=1}
+  else if(o==='1'){const n=prompt('Emoji y nombre (ej. 🍕 Antojos):',c.e+' '+c.n);if(n===null)return;if(n.trim())[c.e,c.n]=parseCat(n);
+    if(c.t==='g'){const b=prompt('Tope por quincena en pesos (0 = sin tope):',String(c.b).replace('.',','));if(b!==null)c.b=Math.max(0,pm(b))}}
+  else return;
+  save();render()}
+function newCat(t){const n=prompt('Emoji y nombre (ej. 🍕 Antojos):');if(!n||!n.trim())return;const[e,nm]=parseCat(n);
+  S.cats.push({id:t+Date.now().toString(36),t,e,n:nm,b:0,x:0});save();render()}
 
-/* ---------- Registro rápido: monto → categoría → guardar ---------- */
+/* ---------- Registro rápido: monto → categoría → guardar (también edita) ---------- */
 let R={};
 const KN={g:'Gasto',i:'Ingreso',a:'Ahorro'};
-function openReg(){R={k:'g',v:'',c:null,f:iso(today()),n:''};reg();$('#sheet').className='open'}
+function openReg(){R={k:'g',v:'',c:null,f:iso(today()),n:'',id:null};reg();$('#sheet').className='open'}
+function edit(id){const t=S.tx.find(x=>x.id===id);if(!t)return;
+  R={k:t.k,v:String(t.m).replace('.',','),c:t.c,f:t.f,n:t.n||'',id};reg();$('#sheet').className='open'}
 function closeReg(){$('#sheet').className=''}
+const fv=v=>{const[i,d]=v.split(',');return '$ '+ds(+i||0)+(d!==undefined?','+d:'')};
 function reg(){
-  const list=R.k==='a'?S.goals.map(g=>({id:g.id,e:'🎯',n:g.n})):S.cats.filter(c=>c.t===R.k);
+  const list=R.k==='a'?S.goals.map(g=>({id:g.id,e:g.t==='v'?'📈':'🛟',n:g.n})):S.cats.filter(c=>c.t===R.k&&(!c.x||c.id===R.c));
   $('#sheet').innerHTML=`<div class="top"><button onclick="closeReg()">✕</button><div class="tabs">${Object.keys(KN).map(k=>`<button class="${R.k===k?'on':''}" onclick="R.k='${k}';R.c=null;reg()">${KN[k]}</button>`).join('')}</div></div>
-   <div class="amt k${R.k}">${cop(+R.v||0)}</div>
+   <div class="amt k${R.k}">${fv(R.v)}<button onclick="key('⌫')" style="font-size:24px;margin-left:14px" aria-label="Borrar">⌫</button></div>
    <div class="chips">${list.map(c=>`<button class="${R.c===c.id?'on':''}" onclick="R.c='${c.id}';reg()">${c.e} ${esc(c.n)}</button>`).join('')}</div>
    <div class="two"><input placeholder="Nota (opcional)" value="${esc(R.n)}" oninput="R.n=this.value"><input type="date" value="${R.f}" onchange="R.f=this.value"></div>
-   <div class="pad">${['1','2','3','4','5','6','7','8','9','000','0','⌫'].map(k=>`<button onclick="key('${k}')">${k}</button>`).join('')}</div>
-   <button class="btn go" ${+R.v&&R.c?'':'disabled'} onclick="saveTx()">Guardar</button>`;
+   <div class="pad">${['1','2','3','4','5','6','7','8','9',',','0','000'].map(k=>`<button onclick="key('${k}')">${k}</button>`).join('')}</div>
+   <button class="btn go" ${pm(R.v)>0&&R.c?'':'disabled'} onclick="saveTx()">${R.id?'Guardar cambios':'Guardar'}</button>
+   ${R.id?`<button class="btn" style="color:var(--red)" onclick="if(del('${R.id}'))closeReg()">Eliminar registro</button>`:''}`;
 }
-function key(k){R.v=(k==='⌫'?R.v.slice(0,-1):(R.v+k).replace(/^0+/,'')).slice(0,9);reg()}
+// Teclado: enteros, coma decimal (máx. 2 decimales) y "000" para miles
+function key(k){let v=R.v;
+  if(k==='⌫')v=v.slice(0,-1);
+  else if(k===','){if(!v.includes(','))v=(v||'0')+','}
+  else if(v.includes(',')){if(k.length===1&&v.split(',')[1].length<2)v+=k}
+  else v=(v+k).replace(/^0+(?=\d)/,'');
+  R.v=v.slice(0,12);reg()}
 function saveTx(){
-  const t={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),k:R.k,m:+R.v,c:R.c,f:R.f||iso(today()),n:R.n.trim(),u:Date.now(),del:0};
-  S.tx.push(t);save();closeReg();V.ref=today();render();
+  const m=r2(pm(R.v));if(!(m>0)||!R.c)return;const ed=!!R.id;let t;
+  if(ed){t=S.tx.find(x=>x.id===R.id);Object.assign(t,{k:R.k,m,c:R.c,f:R.f||iso(today()),n:R.n.trim(),u:Date.now()})}
+  else{t={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),k:R.k,m,c:R.c,f:R.f||iso(today()),n:R.n.trim(),u:Date.now(),del:0};S.tx.push(t)}
+  save();closeReg();V.ref=today();render();
   if(navigator.vibrate)navigator.vibrate(20);
-  toast(`${KN[t.k]} de ${cop(t.m)} guardado`,()=>{t.del=1;t.u=Date.now();save();render()});
+  toast(ed?'Cambios guardados':`${KN[t.k]} de ${cop(t.m)} guardado`,ed?null:()=>{t.del=1;t.u=Date.now();save();render()});
 }
 
 /* ---------- Respaldo: exportar / importar ---------- */
@@ -239,7 +329,7 @@ function expJSON(){S.set.bk=Date.now();save();dl('quincena-respaldo-'+iso(today(
 function expCSV(){
   const q=x=>'"'+String(x).replace(/"/g,'""')+'"';
   const rows=live().sort((a,b)=>a.f.localeCompare(b.f)).map(t=>{const k=(t.k==='a'?goal(t.c):cat(t.c))||{n:''};
-    return [dm(t.f),KN[t.k],k.n,t.m,t.n||''].map(q).join(';')});
+    return [dm(t.f),KN[t.k],k.n,String(t.m).replace('.',','),t.n||''].map(q).join(';')});
   dl('quincena-'+iso(today())+'.csv','\ufeff'+['Fecha;Tipo;Categoría;Monto;Nota'].concat(rows).join('\r\n'),'text/csv');
 }
 // Fusiona: agrega lo nuevo y conserva la versión más reciente de cada registro (por id). No duplica.
@@ -263,7 +353,7 @@ function render(){
   $('#fab').style.display=V.tab==='more'?'none':'block';
   if(ip&&$('#inst'))$('#inst').hidden=false;
 }
-render();
+boot();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
 </body>
