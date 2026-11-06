@@ -159,12 +159,17 @@ function period(dt){
   return{s:a[i],e:new Date(n.getFullYear(),n.getMonth(),n.getDate()-1)};
 }
 // Cálculo de la quincena: ingreso base, ahorro reservado, lo disponible y lo que queda.
-function calc(p){
+function carry(p,d){ // sobrante (o faltante) de la quincena anterior, solo si tuvo registros
+  if(d>24)return 0;
+  const q=period(new Date(p.s.getFullYear(),p.s.getMonth(),p.s.getDate()-1)),a=iso(q.s),b=iso(q.e);
+  return live().some(t=>t.f>=a&&t.f<=b)?calc(q,d+1).left:0}
+function calc(p,d=0){
   const a=iso(p.s),b=iso(p.e),T=live().filter(t=>t.f>=a&&t.f<=b);
   const sum=k=>r2(T.filter(t=>t.k===k).reduce((x,t)=>x+t.m,0));
   const incR=sum('i'),inc=incR||S.set.mesada,exp=sum('g'),sav=sum('a');
-  const res=Math.max(sav,Math.min(S.set.ahorro,inc)),disp=r2(inc-res);
-  return{T,incR,inc,exp,sav,res,disp,left:r2(disp-exp)};
+  const cr=S.set.carry===false?0:carry(p,d);
+  const res=Math.max(sav,Math.min(S.set.ahorro,inc)),disp=r2(inc+cr-res);
+  return{T,incR,inc,exp,sav,res,disp,carry:cr,left:r2(disp-exp)};
 }
 
 /* ---------- Estado de pantalla ---------- */
@@ -191,10 +196,15 @@ function vHome(){
     acc+=c.T.filter(t=>t.k==='g'&&t.f===f).reduce((x,t)=>x+t.m,0);
     pts.push((i/Math.max(n-1,1)*300).toFixed(1)+','+(54-Math.max(0,Math.min(1,(c.disp-acc)/Math.max(c.disp,1)))*48).toFixed(1))}
   const old=live().length&&(!S.set.bk||Date.now()-S.set.bk>30*864e5);
-  return `${old?`<div class="warn" onclick="go('more')">⚠️ Hace más de 30 días sin respaldo. Toca para exportarlo.</div>`:''}
+  let pace='';   // ritmo: gasto promedio por día desde que empezó la quincena, proyectado hasta el cierre
+  if(cur&&lim>=2&&c.exp>0&&c.disp>0){const rate=c.exp/lim,proj=r2(rate*n);
+    if(proj>c.disp){const d=new Date(p.s.getFullYear(),p.s.getMonth(),p.s.getDate()+Math.floor(c.disp/rate));
+      pace=`<div class="warn">⚠️ A este ritmo (${cop(rate)} por día) tu dinero te alcanza hasta el ${dm(iso(d)).slice(0,5)}. Te faltarían ${cop(proj-c.disp)} para cerrar la quincena.</div>`}
+    else pace=`<div class="warn" style="background:var(--card);color:var(--mint)">✅ Vas bien: a este ritmo cerrarías con ${cop(c.disp-proj)} de sobra.</div>`}
+  return `${old?`<div class="warn" onclick="go('more')">⚠️ Hace más de 30 días sin respaldo. Toca para exportarlo.</div>`:''}${pace}
   <div class="card"><div class="hd"><button onclick="nav(-1)">‹</button><b>${p.s.getDate()} ${MES[p.s.getMonth()]} – ${p.e.getDate()} ${MES[p.e.getMonth()]}</b><button onclick="nav(1)" ${p.e>=t0?'disabled':''}>›</button></div>
    <small>Te quedan</small><div class="big ${c.left<0?'neg':''}">${cop(c.left)}</div>
-   <small>de ${cop(c.disp)} disponibles · ahorro reservado ${cop(c.res)}</small>
+   <small>de ${cop(c.disp)} disponibles · ahorro reservado ${cop(c.res)}</small>${c.carry?`<br><small>${c.carry>0?'Incluye':'Descuenta'} ${cop(Math.abs(c.carry))} de la quincena anterior</small>`:''}
    <div class="bar"><i style="width:${Math.min(100,c.exp/Math.max(c.disp,1)*100)}%"></i></div>
    <svg class="ecg" viewBox="0 0 300 60" preserveAspectRatio="none"><polyline points="${pts.join(' ')}"/></svg></div>
   ${cur?`<div class="card"><small>HOY PUEDES GASTAR</small><div class="mid ${hoy<0?'neg':''}">${cop(Math.max(hoy,0))}</div><small>${cop(Math.max(daily,0))} por día · ${days} día${days>1?'s':''} para cerrar</small></div>`:''}
@@ -241,15 +251,24 @@ function vGoals(){
    if(g.t==='v'){const gn=g.val?r2(g.val-ap):0;
     return `<div class="card" onclick="editGoal('${g.id}')"><b>📈 ${esc(g.n)}</b>
      <div class="stats" style="margin-top:10px;font-size:14px"><div><small>Aportado</small><b>${cop(ap)}</b></div><div><small>Valor actual</small><b>${g.val?cop(g.val):'—'}</b></div><div><small>Ganancia</small><b class="${gn<0?'kg':'ki'}">${g.val?cop(gn)+' · '+(ap?(gn/ap*100).toFixed(1).replace('.',','):0)+'%':'—'}</b></div></div>
-     ${g.o?`<div class="bar"><i class="ind" style="width:${Math.min(100,ap/g.o*100)}%"></i></div><small>Meta ${cop(g.o)}</small><br>`:''}<small>${g.vf?'Valor actualizado el '+dm(g.vf):'Toca para anotar el valor actual de Trii'}</small></div>`}
+     ${g.o?`<div class="bar"><i class="ind" style="width:${Math.min(100,ap/g.o*100)}%"></i></div><small>Meta ${cop(g.o)}</small><br>`:''}<small>${g.vf?'Valor actualizado el '+dm(g.vf):'Toca para anotar el valor actual de Trii'}</small>${need(g,ap)}</div>`}
    const pc=g.o?Math.min(100,ap/g.o*100):0;
-   return `<div class="card" onclick="editGoal('${g.id}')"><b>🛟 ${esc(g.n)}</b><div class="bar"><i class="ind" style="width:${pc}%"></i></div><small>${cop(ap)} ${g.o?`de ${cop(g.o)} · ${Math.round(pc)}%`:'· toca para definir el monto objetivo'}</small></div>`};
+   return `<div class="card" onclick="editGoal('${g.id}')"><b>🛟 ${esc(g.n)}</b><div class="bar"><i class="ind" style="width:${pc}%"></i></div><small>${cop(ap)} ${g.o?`de ${cop(g.o)} · ${Math.round(pc)}%`:'· toca para definir el monto objetivo'}</small>${need(g,ap)}</div>`};
   return `<h2 class="t">Metas</h2>${S.goals.map(card).join('')}<div style="margin:0 16px"><button class="btn" onclick="newGoal('a')">+ Meta de ahorro</button><button class="btn" onclick="newGoal('v')">+ Meta de inversión</button></div>`;
 }
+function need(g,ap){   // cuánto aportar por quincena para llegar a la meta en la fecha elegida
+  if(!g.f||!g.o)return '';
+  const rest=r2(g.o-ap);if(rest<=0)return '<br><small class="ki">Meta cumplida</small>';
+  const T=pd(g.f);if(T<today())return `<br><small class="kg">La fecha (${dm(g.f)}) ya pasó y faltan ${cop(rest)}</small>`;
+  let p=period(today()),n=1;
+  while(p.e<T&&n<400){p=period(new Date(p.e.getFullYear(),p.e.getMonth(),p.e.getDate()+1));n++}
+  return `<br><small>Para llegar el ${dm(g.f)} aporta ${cop(Math.ceil(rest/n))} por quincena (${n} quincena${n>1?'s':''}).</small>`}
 function editGoal(id){const g=goal(id);
   const n=prompt('Nombre de la meta:',g.n);if(n===null)return;
   const o=prompt('Monto objetivo en pesos (0 = sin meta):',String(g.o).replace('.',','));if(o===null)return;
+  const f=prompt('Fecha objetivo dd/mm/aaaa (vacío = sin fecha):',g.f?dm(g.f):'');if(f===null)return;
   g.n=n.trim()||g.n;g.o=Math.max(0,pm(o));
+  const m=f.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);g.f=m?m[3]+'-'+pad(m[2])+'-'+pad(m[1]):(f.trim()?g.f:'');
   if(g.t==='v'){const v=prompt('Valor actual de tu portafolio en Trii (vacío = no cambiar):','');if(v&&v.trim()){g.val=Math.max(0,pm(v));g.vf=iso(today())}}
   g.u=Date.now();save();render()}
 function newGoal(t){const n=prompt(t==='v'?'Nombre de la inversión (ej. Trii acciones):':'Nombre de la meta de ahorro:');if(!n)return;
@@ -264,18 +283,20 @@ function vMore(){const s=S.set;
    <label>Ahorro por quincena ($)<input id="pc" inputmode="decimal" value="${String(s.ahorro).replace('.',',')}"></label>
    <button class="btn" onclick="saveSet()">Guardar ajustes</button></div>
   <div class="card"><b>Apariencia</b><div class="chips" style="margin:10px 0 0">${[['grafito','Grafito'],['carbon','Carbón'],['niebla','Niebla']].map(([k,n])=>`<button class="${s.th===k?'on':''}" onclick="setTh('${k}')">${n}</button>`).join('')}</div></div>
+  <div class="card"><b>Sobrante de la quincena</b><br><small>Qué pasa con el dinero que no gastas ni ahorras.</small><div class="chips" style="margin:10px 0 0"><button class="${s.carry!==false?'on':''}" onclick="setCarry(true)">Sumarlo a la siguiente</button><button class="${s.carry===false?'on':''}" onclick="setCarry(false)">No arrastrarlo</button></div></div>
   <div class="card"><b>Categorías de gasto</b><br><small>Toca una para editarla, ponerle un tope por quincena u ocultarla.</small><div style="margin-top:8px">${cl('g')}</div><button class="btn" onclick="newCat('g')">+ Categoría de gasto</button></div>
   <div class="card"><b>Categorías de ingreso</b><div style="margin-top:8px">${cl('i')}</div><button class="btn" onclick="newCat('i')">+ Categoría de ingreso</button></div>
   <div class="card"><b>Respaldo</b><br><small>Último respaldo: ${s.bk?dm(iso(new Date(s.bk))):'nunca'}</small>
    <button class="btn" onclick="expJSON()">Exportar respaldo (JSON)</button>
    <button class="btn" onclick="expCSV()">Exportar CSV (para Excel)</button>
    <label class="btn">Importar respaldo (fusiona)<input type="file" accept=".json,application/json" hidden onchange="imp(this.files[0])"></label></div>
-  <div class="card"><button class="btn" id="inst" hidden onclick="instalar()">Instalar app</button><small>Quincena v3 · datos cifrados en este dispositivo y sin conexión a internet.</small></div>`;
+  <div class="card"><button class="btn" id="inst" hidden onclick="instalar()">Instalar app</button><small>Quincena v4 · datos cifrados en este dispositivo y sin conexión a internet.</small></div>`;
 }
 function saveSet(){
   const a=parseInt($('#d1').value),b=parseInt($('#d2').value),m=pm($('#ms').value),p=pm($('#pc').value);
   if(!(a>=1&&a<=31&&b>=1&&b<=31)||a===b||m<=0||p<0||p>m){alert('Revisa los datos: dos días distintos (1-31), una mesada mayor que 0 y un ahorro que no supere la mesada.');return}
   Object.assign(S.set,{dias:[a,b].sort((x,y)=>x-y),mesada:m,ahorro:p});save();toast('Ajustes guardados');render()}
+function setCarry(v){S.set.carry=v;save();render()}
 function setTh(k){S.set.th=k;save();applyTh();render()}
 function applyTh(){document.documentElement.dataset.th=S.set.th;const m=document.querySelector('meta[name=theme-color]');if(m)m.content=getComputedStyle(document.body).backgroundColor}
 const parseCat=n=>{const m=n.trim().match(/^(\S+)\s+(.+)$/);return m?[m[1],m[2]]:['🔹',n.trim()]};
